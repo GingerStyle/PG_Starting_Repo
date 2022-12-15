@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../modules/pool');
 
 router.get('/', (req, res) => {
-    let queryText = 'SELECT * from songs;';
+    let queryText = 'SELECT * from songs ORDER BY id asc;';
     pool.query(queryText)
     .then((result) => {
         console.log('results from db', result);
@@ -56,6 +56,30 @@ router.post('/', (req, res) => {
     });
 });
 
-
+router.put('/rank/:id', (req, res) => {
+    console.log('rank id', req.params.id);
+    console.log('rank body', req.body.direction);
+    const direction = req.body.direction;
+    let queryText = '';
+    if (direction == 'up'){
+        //increase rank
+        queryText = `UPDATE "songs" SET "rank" = rank + 1 WHERE "id"=${req.params.id};`;
+    }else if(direction == 'down'){
+        //decreaase rank
+        queryText = `UPDATE "songs" SET "rank" = rank - 1 WHERE "id"=${req.params.id};`;
+    }else {
+        res.sendStatus(500);
+        return;
+    }
+    pool.query(queryText)
+    .then((dbResponse) => {
+        console.log('dbResponse', dbResponse);
+        res.sendStatus(200);
+    }).catch((error) => {
+        console.log(error);
+        res.sendStatus(500);
+    })
+    
+});
 
 module.exports = router;
